@@ -30,7 +30,7 @@ To install, pull down the files from the repo. Then run `npm install` in the dir
   
 Once you have installed the app, right click on one of your files in the directory you're working in. Click "Open in Integrated Terminal". Then in your command line, type `npm start`. You will be prompted with the employee database menu.
 
-Here you will see options to view departments, roles, and employees, add departments, roles, and employees, as well as update employee records. 
+Here you will see options to view departments, roles, and employees, add departments, roles, and employees, as well as update employee records.
   
 ## Technologies Used
 

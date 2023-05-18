@@ -4,13 +4,13 @@ const mysql = require('mysql2');
 
 //Inquirer questions array
 const menu =
-    [
-        {
-        type: 'list',
-        message: 'What would you like to do?',
-        choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add A Department', 'Add A Role', 'Add An Employee', 'Update An Employee Role', 'EXIT'],
-        name: 'action'
-        },
+[
+    {
+    type: 'list',
+    message: 'What would you like to do?',
+    choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add A Department', 'Add A Role', 'Add An Employee', 'Update An Employee Role', 'EXIT'],
+    name: 'action'
+    },
 ];
 
 // Connect to database
@@ -70,7 +70,7 @@ function launchMenu() {
           addRole();
 
       // execute function addRole if user selection is "Add roles"
-      }else if(answer.action == "Edit employee") {
+      }else if(answer.action == "Update An Employee Role") {
 
           updateEmployee();
 
@@ -87,6 +87,120 @@ function launchMenu() {
       }
   })
 };
+
+//Create an array of current employees
+let employeeQuery = 'SELECT first_name, last_name FROM employees';
+
+let employeeArray = [];
+
+db.query(employeeQuery, function(err, res) {
+
+  if (err) throw err;
+
+  employeeArray = res.map(function (obj) {
+
+  var employeeNames = `${obj.first_name} ${obj.last_name}`;
+
+  employeeArray.push(employeeNames);
+
+  return employeeArray;
+
+  });
+});
+
+//Create an array of current roles
+let roleQuery = 'SELECT title FROM roles';
+
+let roleArray = [];
+
+db.query(roleQuery, function(err, res) {
+
+  if (err) throw err;
+
+ roleArray = res.map(function (obj) {
+
+  var titles = `${obj.title}`;
+
+  roleArray.push(titles);
+
+  return roleArray;
+
+  });
+});
+
+//Questions to add employee
+const addEmployeeQuestions =
+[
+  {
+  type: 'input',
+  message: 'First name of new employee:',
+  name: 'firstName'
+  },
+  {
+  type: 'input',
+  message: 'Last name of new employee:',
+  name: 'lastName'
+  },
+  {
+  type: 'list',
+  message: 'New employee role:',
+  choices: ['Account Executive', 'Sr Account Executive', 'Sales Director', 'HR Coordinator', 'HR Director', 'Jr Developer', 'Sr Developer', 'Programming Director', 'IT Project Manager', 'IT Project Director', 'Chief Executive Officer', 'Chief Operating Officer', 'Chief Financial Officer'],
+  name: 'newRole'
+  },
+  {
+  type: 'list',
+  message: 'New employee\'s manager:',
+  choices: employeeArray,
+  name: 'employeeManager'
+  },
+];
+
+//Question to select employee to update
+const updateEmployeeQuestions = 
+[
+  {
+  type: 'list',
+  message: 'Employee to update:',
+  choices: employeeArray,
+  name: 'empToUpdate'
+  },
+  {type: 'list',
+  message: 'Employee\'s new role:',
+  choices: roleArray,
+  name: 'updateRole'
+  },
+];
+
+//Question to add a department
+const addDepartmentQuestions =
+[
+    {
+    type: 'input',
+    message: 'Name of new Department:',
+    name: 'deptName'
+    },
+];
+
+//Questions to add new role
+const addRoleQuestions =
+[
+  {
+  type: 'input',
+  message: 'Name of new Role:',
+  name: 'roleTitle'
+  },
+  {
+  type: 'input',
+  message: 'Salary of new Role (No symbols, round numbers only):',
+  name: 'roleSalary'
+  },
+  {
+  type: 'list',
+  message: 'Assign Role to department:',
+  choices: ['Sales', 'Human Resources', 'Engineering', 'IT', 'Finance', 'Executive'],
+  name: 'departmentName'
+  },
+];
 
 //Functions to return responses based on user action
 function viewAllEmployees() {
@@ -147,52 +261,6 @@ function viewDept() {
 //Function to add new employee 
 async function addEmployee() {
 
-  //Create an array with current employees for manager options
-  let employeeQuery = 'SELECT first_name, last_name FROM employees';
-
-  let employeeArray = [];
-
-    db.query(employeeQuery, function(err, res) {
-
-      if (err) throw err;
-
-      employeeArray = res.map(function (obj) {
-
-      var employeeNames = `${obj.first_name} ${obj.last_name}`;
-
-      employeeArray.push(employeeNames);
-
-      return employeeArray;
-
-      });
-    });
-
-  const addEmployeeQuestions =
-  [
-      {
-      type: 'input',
-      message: 'First name of new employee:',
-      name: 'firstName'
-      },
-      {
-      type: 'input',
-      message: 'Last name of new employee:',
-      name: 'lastName'
-      },
-      {
-      type: 'list',
-      message: 'New employee role:',
-      choices: ['Account Executive', 'Sr Account Executive', 'Sales Director', 'HR Coordinator', 'HR Director', 'Jr Developer', 'Sr Developer', 'Programming Director', 'IT Project Manager', 'IT Project Director', 'Chief Executive Officer', 'Chief Operating Officer', 'Chief Financial Officer'],
-      name: 'newRole'
-      },
-      {
-      type: 'list',
-      message: 'New employee\'s manager:',
-      choices: employeeArray,
-      name: 'employeeManager'
-      },
-  ];
-
   // prompt user for new employee information
   await inquirer.prompt(addEmployeeQuestions)
     .then(function(answer) {
@@ -236,7 +304,7 @@ async function addEmployee() {
 
         if (err) throw err;
 
-        console.info(`New employee added to employees table! ${res}`)
+        console.info(`New employee added to employees table!`)
 
         // prompt user for next action
         launchMenu();
@@ -246,15 +314,6 @@ async function addEmployee() {
 
 //Create New Department
 async function addDept() {
-
-  const addDepartmentQuestions =
-  [
-      {
-      type: 'input',
-      message: 'Name of new Department:',
-      name: 'deptName'
-      },
-  ];
 
   // prompt user for new department information
   await inquirer.prompt(addDepartmentQuestions)
@@ -268,7 +327,7 @@ async function addDept() {
 
         if (err) throw err;
 
-        console.info(`New department added to departments table! ${res}`)
+        console.info(`New department added to departments table!`)
 
         // prompt user for next action
         launchMenu();
@@ -278,26 +337,6 @@ async function addDept() {
 
 //Create New Role
 async function addRole() {
-
-  const addRoleQuestions =
-  [
-      {
-      type: 'input',
-      message: 'Name of new Role:',
-      name: 'roleTitle'
-      },
-      {
-        type: 'input',
-        message: 'Salary of new Role (No symbols, round numbers only):',
-        name: 'roleSalary'
-        },
-        {
-          type: 'list',
-          message: 'Assign Role to department:',
-          choices: ['Sales', 'Human Resources', 'Engineering', 'IT', 'Finance', 'Executive'],
-          name: 'departmentName'
-          },
-  ];
 
   // prompt user for new role information
   await inquirer.prompt(addRoleQuestions)
@@ -316,10 +355,47 @@ async function addRole() {
 
         if (err) throw err;
 
-        console.info(`New role added to roles table! ${res}`)
+        console.info(`New role added to roles table!`)
 
         // prompt user for next action
         launchMenu();
     });
   });
+};
+
+//Update Employee Role
+async function updateEmployee() {
+    
+  // prompt user to select employee to update
+  inquirer.prompt(updateEmployeeQuestions)
+  .then(function(answer) {
+
+    let employeeToUpdate = answer.empToUpdate;
+
+    let roleToUpdate = answer.updateRole;
+
+    let getRoleId = `SELECT r_id FROM roles WHERE title = "${roleToUpdate}"`;
+
+    db.query(getRoleId, function(err, res) {
+
+      if (err) throw err;
+
+      let roleIdResponse = res[0].r_id;
+
+      let empNameSlice = employeeToUpdate.replace(/ .*/,'');
+
+      let employeeUpdateQuery = `UPDATE employees SET role_id = ${roleIdResponse} WHERE first_name = "${empNameSlice}"`;
+
+      db.query(employeeUpdateQuery, function(err, res) {
+
+        if (err) throw err;
+
+        console.log(`Emloyee role updated to: ${roleIdResponse}`)
+
+        // prompt user for next action
+        launchMenu();
+
+      })
+    })
+  })
 };
